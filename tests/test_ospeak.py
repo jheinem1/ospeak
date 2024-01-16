@@ -1,3 +1,4 @@
+from click.exceptions import BadOptionUsage
 from click.testing import CliRunner
 from ospeak.cli import cli
 import pytest
@@ -25,6 +26,11 @@ def test_speed_out_of_bounds():
     assert result2.exit_code == 2
     assert "Invalid value for " in result2.output
 
+def test_exceed_token_limit():
+    long_string = "a" * 4097
+    result = runner.invoke(cli, [long_string])
+    assert result.exit_code == 2
+    assert "value_error.any_str.max_length" in result.output
 
 @pytest.mark.parametrize("invalid_voice", ["unknown", "invalid", "123"])
 def test_invalid_voice_option(invalid_voice):
