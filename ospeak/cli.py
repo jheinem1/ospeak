@@ -2,7 +2,7 @@ import io
 import sys
 
 import click
-from openai import OpenAI, NotFoundError
+from openai import OpenAI, NotFoundError, BadRequestError
 from pydub import AudioSegment
 from pydub.playback import play
 
@@ -26,6 +26,12 @@ def stream_and_play(
         except (ValueError, KeyError):
             details = str(msg)
         raise click.ClickException(details)
+    except BadRequestError as msg:
+        try:
+            details = msg.response.json()["error"]["message"]
+        except (ValueError, KeyError):
+            details = str(msg)
+        raise click.BadOptionUsage("text", details)
 
     byte_stream = io.BytesIO(response.content)
     audio = AudioSegment.from_file(byte_stream, format="mp3")
